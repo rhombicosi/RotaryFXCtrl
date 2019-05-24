@@ -14,14 +14,6 @@ const int DT = 15;
 const int CLK0 = 32;
 const int DT0 = 33;
 
-//const int encoderStepsPerRevolution = 30;
-//volatile int angle = 0;
-//volatile int period = 0;
-//
-//volatile int angle0 = 0;
-
-// Rotary encoder is wired with the common to ground and the two
-// outputs to pins 14 and 15.
 Rotary ro = Rotary(14, 15);
 Rotary ro0 = Rotary(32, 33);
 
