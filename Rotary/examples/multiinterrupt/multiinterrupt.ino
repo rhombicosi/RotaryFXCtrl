@@ -27,23 +27,23 @@ void setup() {
   pinMode(DT0, INPUT_PULLUP);
 
 
-  attachInterrupt(digitalPinToInterrupt(CLK), rotor, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(DT), rotor, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(CLK), rotate, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DT), rotate, CHANGE);
 
-  attachInterrupt(digitalPinToInterrupt(CLK0), rotor0, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(DT0), rotor0, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(CLK0), rotate0, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DT0), rotate0, CHANGE);
 }
 
 void loop() {
 }
 
-void rotor() 
+void rotate() 
 {
   ro.process();
   ro.rotate();
 }
 
-void rotor0()
+void rotate0()
 {
   ro0.process();
   ro0.rotate();
