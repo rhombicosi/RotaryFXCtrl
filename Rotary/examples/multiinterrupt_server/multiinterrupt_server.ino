@@ -15,9 +15,8 @@ WebServer server;
 WebSocketsServer Socket = WebSocketsServer(81);
 
 /* 
- * HTML page is loaded from a separate header file 
- * stored within the project
- * and should be included in the following way
+ * header file containing HTML page 
+ * should be included in the following way
  */
 char webpage[] PROGMEM =
 #include "webpage.h"
@@ -87,12 +86,11 @@ void rotate1()
   ro[1].rotate();
 }
 
-/**/
 void getData(){
   String json = "{\"encoder\": [";
   
   for (int i = 0; i < 2; i++){
-    json += CLK[i];
+    json += ro[i].getCounter();
     if(i != 1) {
       json += ",";  
     }

@@ -18,29 +18,73 @@ R"=====(
         font-family: sans-serif;
         color: gray;
     }
-    .wrapper {
-        display: flex;
-        flex-flow: column wrap;
-        align-content: space-between;
-        -ms-flex-line-pack: justify;
-        height: 100%;
+    
+    .rTable { 
+      display: table;
+      width: 100%;
     }
-    .wrapper .block {
-        width: 49%;
-        margin: 0 0 10px 0;
+    .rTableRow { 
+      display: table-row; 
     }
-    .plot {
-        margin: 0 0 10px 0;
-    }    
-    .geometry {
-        background-color: black;
-        width: 100% !important;
-        height: 55.55% !important;
-    }        
+    .rTableHeading { 
+      display: table-header-group; 
+      background-color: #ddd;
+      font-weight: bold;
+    }
+    .rTableBody { 
+      display: table-row-group; 
+    }
+    .rTableFoot { 
+      display: table-footer-group; 
+      background-color: #ddd;
+      font-weight: bold;
+    }
+    .rTableCell, .rTableHead { 
+      display: table-cell;
+      padding: 3px 10px;
+      border: 1px solid #999999; 
+    } 
   </style> 
 </head>
-<body>
-<p><h1>RotaryFXCtrl</h1></p>
+<body onload="javascript:init()">
+  <h1>RotaryFXCtrl</h1>
+  <div class="rTable">
+  <div class="rTableRow">
+  <div class="rTableHead"><strong>Encoder</strong></div>
+  <div class="rTableHead"><span>Counter</span></div>
+  <div class="rTableHead"><span>Angle</span></div>
+  <div class="rTableHead"><span>Period</span></div>
+  </div>
+  <div class="rTableRow">
+  <div class="rTableCell">1</div>
+  <div class="rTableCell"><a id="counter1"></a></div>
+  <div class="rTableCell"><a id="angle1"></a></div>
+  <div class="rTableCell"><a id="period1"></a></div>
+  </div>
+  <div class="rTableRow">
+  <div class="rTableCell">2</div>
+  <div class="rTableCell"><a id="counter2"></a></div>
+  <div class="rTableCell"><a id="angle2"></a></div>
+  <div class="rTableCell"><a id="period2"></a></div>
+  </div>
+  </div>
+
+  <script>
+   let webSocket;
+   let webEncoder = [];
+
+   function init() {
+     webSocket = new WebSocket('ws://' + window.location.hostname + ':81/');
+
+     webSocket.onmessage = function(event) {
+        var data = JSON.parse(event.data);                    
+        console.log(data.encoder);
+        for (let i = 0; i < 2; i++) {          
+          webEncoder[i] = data.encoder[i]; 
+        }
+     }    
+   }   
+  </script>
 </body>
 </html>
 )====="
