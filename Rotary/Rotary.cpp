@@ -155,11 +155,11 @@ unsigned char Rotary::process() {
 
 void Rotary::prnt() {
 	Serial.println(" *** ");
-	Serial.println("rotary lib pin1 " + String(pin1));
-	Serial.println("rotary lib pin2 " + String(pin2));
-	Serial.println("rotary lib counter " + String(counter));
-	Serial.println("rotary lib angle " + String(angle));
-	Serial.println("rotary lib period " + String(period));
+	Serial.println("pin1 " + String(pin1));
+	Serial.println("pin2 " + String(pin2));
+	Serial.println("counter " + String(counter));
+	Serial.println("angle " + String(angle));
+	Serial.println("period " + String(period));
 }
 
 void Rotary::rotate() {
@@ -169,12 +169,7 @@ void Rotary::rotate() {
 		angle = (counter % encoderStepsPerRevolution) * 360 / encoderStepsPerRevolution;
 		period = counter / encoderStepsPerRevolution;
 
-		Serial.println(" *** ");
-		Serial.println("rotary lib pin1 " + String(pin1));
-		Serial.println("rotary lib pin2 " + String(pin2));
-		Serial.println("rotary lib counter " + String(counter));
-		Serial.println("rotary lib angle " + String(angle));
-		Serial.println("rotary lib period " + String(period));
+		prnt();
 	}
 
 	else if (result == DIR_CCW) {
@@ -182,11 +177,7 @@ void Rotary::rotate() {
 		angle = (counter % encoderStepsPerRevolution) * 360 / encoderStepsPerRevolution;
 		period = counter / encoderStepsPerRevolution;
 
-		Serial.println(" *** ");
-		Serial.println("rotary lib pin1 " + String(pin1));
-		Serial.println("rotary lib pin2 " + String(pin2));
-		Serial.println("rotary lib counter " + String(counter));
-		Serial.println("rotary lib angle " + String(angle));
-		Serial.println("rotary lib period " + String(period));
+		prnt();
 	}
 }
+

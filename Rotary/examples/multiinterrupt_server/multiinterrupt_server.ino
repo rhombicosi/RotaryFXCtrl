@@ -14,8 +14,9 @@ char * password = "salamander";
 WebServer server;
 WebSocketsServer Socket = WebSocketsServer(81);
 
-/* HTML page is loaded from a separate header file 
- * that file is stored within the project 
+/* 
+ * HTML page is loaded from a separate header file 
+ * stored within the project
  * and should be included in the following way
  */
 char webpage[] PROGMEM =
@@ -31,6 +32,8 @@ Rotary ro[2] = { Rotary(CLK[0], DT[0]), Rotary(CLK[1], DT[1])};
 void setup() { 
 
   Serial.begin(115200);
+  
+  /* server part */
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -42,14 +45,17 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
+  /* serving webpage on client GET request ( entering ESP32 URL*/
   server.on("/",[](){
     server.send_P(200, "text/html", webpage);
-  });  
+  }); 
+   
   server.begin();
   
   Socket.begin();
   Socket.onEvent(webSocketEvent);   
 
+  /* call getData function every 0.2 ms */
   timer.attach(0.2, getData);
   
   for(int i = 0; i < 2; i++) {
@@ -81,6 +87,7 @@ void rotate1()
   ro[1].rotate();
 }
 
+/**/
 void getData(){
   String json = "{\"encoder\": [";
   
