@@ -14,6 +14,10 @@ char * password = "salamander";
 WebServer server;
 WebSocketsServer Socket = WebSocketsServer(81);
 
+/* HTML page is loaded from a separate header file 
+ * that file is stored within the project 
+ * and should be included in the following way
+ */
 char webpage[] PROGMEM =
 #include "webpage.h"
 ;
