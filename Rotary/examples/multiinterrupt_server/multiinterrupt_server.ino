@@ -87,10 +87,23 @@ void rotate1()
 }
 
 void getEncoderData(){
-  String json = "{\"encoder\": [";
+  String json = "{\"encoders\": [";
   
   for (int i = 0; i < 2; i++){
+    json += "{\"pins\": [";
+    json += CLK[i];
+    json += ",";
+    json += DT[i];
+    json += "],";
+    json += "\"counter\": ";
     json += ro[i].getCounter();
+    json += ",";
+    json += "\"angle\": ";
+    json += ro[i].getAngle();
+    json += ",";
+    json += "\"period\": ";
+    json += ro[i].getPeriod();
+    json += "}";
     if(i != 1) {
       json += ",";  
     }

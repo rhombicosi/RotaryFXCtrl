@@ -184,6 +184,8 @@ void Rotary::getPositionParameters(){
 	period = counter / encoderStepsPerRevolution;
 }
 
+
+
 int Rotary::getCounter() {
 	return counter;
 }

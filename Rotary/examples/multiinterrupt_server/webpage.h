@@ -71,16 +71,17 @@ R"=====(
 
   <script>
    let webSocket;
-   let webEncoder = [];
 
    function init() {
      webSocket = new WebSocket('ws://' + window.location.hostname + ':81/');
 
      webSocket.onmessage = function(event) {
         var data = JSON.parse(event.data);                    
-        console.log(data.encoder);
-        for (let i = 0; i < 2; i++) {          
-          webEncoder[i] = data.encoder[i]; 
+        console.log(data.encoders);
+        for (let i = 0; i < 2; i++) {
+          document.getElementById(`counter${i+1}`).innerHTML  = data.encoders[i].counter; 
+          document.getElementById(`angle${i+1}`).innerHTML  = data.encoders[i].angle; 
+          document.getElementById(`period${i+1}`).innerHTML  = data.encoders[i].period; 
         }
      }    
    }   
