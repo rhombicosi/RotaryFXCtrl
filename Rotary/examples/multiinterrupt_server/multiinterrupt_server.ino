@@ -54,8 +54,8 @@ void setup() {
   Socket.begin();
   Socket.onEvent(webSocketEvent);   
 
-  /* call getData function every 0.2 ms */
-  timer.attach(0.2, getData);
+  /* call getEncoderData function every 0.2 ms */
+  timer.attach(0.2, getEncoderData);
   
   for(int i = 0; i < 2; i++) {
     pinMode(CLK[i], INPUT_PULLUP);
@@ -86,7 +86,7 @@ void rotate1()
   ro[1].rotate();
 }
 
-void getData(){
+void getEncoderData(){
   String json = "{\"encoder\": [";
   
   for (int i = 0; i < 2; i++){
@@ -100,5 +100,4 @@ void getData(){
   Socket.broadcastTXT(json.c_str(), json.length());
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){
-}
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){}

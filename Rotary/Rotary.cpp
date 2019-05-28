@@ -166,18 +166,33 @@ void Rotary::rotate() {
 
 	if (result == DIR_CW) {
 		counter++;
-		angle = (counter % encoderStepsPerRevolution) * 360 / encoderStepsPerRevolution;
-		period = counter / encoderStepsPerRevolution;
+		getPositionParameters();
 
 		prnt();
 	}
 
 	else if (result == DIR_CCW) {
 		counter--;
-		angle = (counter % encoderStepsPerRevolution) * 360 / encoderStepsPerRevolution;
-		period = counter / encoderStepsPerRevolution;
+		getPositionParameters();
 
 		prnt();
 	}
+}
+
+void Rotary::getPositionParameters(){
+	angle = (counter % encoderStepsPerRevolution) * 360 / encoderStepsPerRevolution;
+	period = counter / encoderStepsPerRevolution;
+}
+
+int Rotary::getCounter() {
+	return counter;
+}
+
+int Rotary::getAngle() {
+	return angle;
+}
+
+int Rotary::getPeriod() {
+	return period;
 }
 

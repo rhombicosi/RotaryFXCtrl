@@ -29,6 +29,10 @@ class Rotary
 		unsigned char process();
 		void prnt();
 		void rotate();
+		void getPositionParameters();
+		int getCounter();
+		int getAngle();
+		int getPeriod();
 	private:
 		unsigned char state;
 		unsigned char pin1;
