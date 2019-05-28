@@ -11,7 +11,7 @@ Ticker timer;
 char * ssid = "HEXECONTAHEDRON";
 char * password = "salamander";
 
-WebServer server;
+WebServer Server;
 WebSocketsServer Socket = WebSocketsServer(81);
 
 /* 
@@ -44,12 +44,12 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  /* serving webpage on client GET request ( entering ESP32 URL*/
-  server.on("/",[](){
-    server.send_P(200, "text/html", webpage);
+  /* serving webpage on client request */
+  Server.on("/",[](){
+    Server.send_P(200, "text/html", webpage);
   }); 
    
-  server.begin();
+  Server.begin();
   
   Socket.begin();
   Socket.onEvent(webSocketEvent);   
@@ -70,7 +70,7 @@ void setup() {
 }
 
 void loop() {
-  server.handleClient();
+  Server.handleClient();
   Socket.loop();
 }
 
