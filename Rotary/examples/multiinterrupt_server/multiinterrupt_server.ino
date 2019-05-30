@@ -8,8 +8,8 @@
 /* server part */
 Ticker timer;
 
-char * ssid = "HEXECONTAHEDRON";
-char * password = "salamander";
+char * ssid = "******";
+char * password = "******";
 
 WebServer Server;
 WebSocketsServer Socket = WebSocketsServer(81);

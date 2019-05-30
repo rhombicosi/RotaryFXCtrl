@@ -51,9 +51,9 @@ R"=====(
   <div class="rTable">
   <div class="rTableRow">
   <div class="rTableHead"><strong>Encoder</strong></div>
-  <div class="rTableHead"><span>Counter</span></div>
-  <div class="rTableHead"><span>Angle</span></div>
-  <div class="rTableHead"><span>Period</span></div>
+  <div class="rTableHead"><strong>Counter</strong></div>
+  <div class="rTableHead"><strong>Angle</strong></div>
+  <div class="rTableHead"><strong>Period</strong></div>
   </div>
   <div class="rTableRow">
   <div class="rTableCell">1</div>
