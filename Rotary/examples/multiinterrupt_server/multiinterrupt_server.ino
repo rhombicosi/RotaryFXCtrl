@@ -19,7 +19,7 @@ WebSocketsServer Socket = WebSocketsServer(81);
  * should be included in the following way
  */
 char webpage[] PROGMEM =
-#include "webpage.h"
+#include "webpage2.h"
 ;
 
 /* encoder part */
@@ -44,19 +44,18 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
+  Server.begin();
   /* serving webpage on client request */
   Server.on("/",[](){
     Server.send_P(200, "text/html", webpage);
   }); 
-   
-  Server.begin();
   
   Socket.begin();
   Socket.onEvent(webSocketEvent);   
 
-  /* call getEncoderData function every 0.2 ms */
-  timer.attach(0.2, getEncoderData);
-  
+  /* call getEncoderData function */
+  timer.attach(0.01, getEncoderData);
+ 
   for(int i = 0; i < 2; i++) {
     pinMode(CLK[i], INPUT_PULLUP);
     pinMode(DT[i], INPUT_PULLUP);
@@ -87,8 +86,7 @@ void rotate1()
 }
 
 void getEncoderData(){
-  String json = "{\"encoders\": [";
-  
+  String json = "{\"encoders\": [";  
   for (int i = 0; i < 2; i++){
     json += "{\"pins\": [";
     json += CLK[i];
@@ -107,9 +105,9 @@ void getEncoderData(){
     if(i != 1) {
       json += ",";  
     }
-  }
-  
+  }  
   json += "]}";
+  
   Socket.broadcastTXT(json.c_str(), json.length());
 }
 

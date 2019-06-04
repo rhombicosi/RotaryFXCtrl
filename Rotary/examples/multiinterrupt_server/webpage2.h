@@ -43,6 +43,10 @@ R"=====(
       display: table-cell;
       padding: 3px 10px;
       border: 1px solid #999999; 
+    }
+    #geometry {
+      width:90%;
+      height: 75%;
     } 
   </style> 
 </head>
@@ -101,8 +105,7 @@ R"=====(
     }    
 
     function setup(){
-      //let c = document.getElementById("3d");
-      let can = createCanvas(720, 400, WEBGL);      
+      let can = createCanvas(windowWidth * 0.97, windowHeight * 0.85 , WEBGL);      
       can.class('geometry');
       can.parent('3d'); 
 
@@ -119,7 +122,7 @@ R"=====(
 
       rotateY(angles[0] * 0.01);
 
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 5; j++) {        
         push();
         for (let i = 0; i < 80; i++) {
           translate(
@@ -127,7 +130,7 @@ R"=====(
             sin(frameCount * 0.001 + j) * 100,
             i * 0.1
           );
-          rotateZ(frameCount * 0.002);
+          rotateZ(angles[1] * 0.002);
           push();
           sphere(8, 6, 4);
           pop();
