@@ -8,6 +8,8 @@ R"=====(
   <script src='https://cdnjs.cloudflare.com/ajax/libs/smoothie/1.32.0/smoothie.min.js'></script> 
   <style type="text/css">
     body {
+      margin: 0;
+      padding: 0;
       background: black;
       color: white;
       line-height: 100%;
@@ -45,9 +47,12 @@ R"=====(
       border: 1px solid #999999; 
     }
     #geometry {
-      width:90%;
+      width:  80%;
       height: 75%;
     } 
+    #3d {
+      display: block;  
+    }
   </style> 
 </head>
 <body>
@@ -73,7 +78,7 @@ R"=====(
     </div>
   </div>
   
-  <div id="3d" class="block"></div>
+  <div id="3d"></div>
   <script>
     let webSocket = new WebSocket('ws://' + window.location.hostname + ':81/');
 
@@ -92,8 +97,7 @@ R"=====(
     let insideRadius = 100;
 
     webSocket.onmessage = function(event) {
-      let data = JSON.parse(event.data);                    
-      //console.log(data.encoders);
+      let data = JSON.parse(event.data);
       for (let i = 0; i < 2; i++) {
         counters[i] = data.encoders[i].counter;
         angles[i] = data.encoders[i].angle;
@@ -105,9 +109,10 @@ R"=====(
     }    
 
     function setup(){
-      let can = createCanvas(windowWidth * 0.97, windowHeight * 0.85 , WEBGL);      
-      can.class('geometry');
-      can.parent('3d'); 
+      let cnv = createCanvas(windowWidth * 0.95, windowHeight * 0.85, WEBGL);
+      cnv.style('display', 'block');      
+      cnv.class('geometry');
+      cnv.parent('3d'); 
 
       for (let i = 0; i < width; i++) {
         let amount = map(i, 0, width, 0, PI);
@@ -137,14 +142,7 @@ R"=====(
         }
         pop();
       }
-  
-//      for (let i = 0; i < 2; i++) {
-//        fill(0,100*i,255-100*i,10*periods[i]);
-//        arc(200+400*i, 300, 200, 200, 0, map(angles[i],0, 360, 0, TWO_PI));
-//      }
     }
-
-  
   </script>
 </body>
 </html>

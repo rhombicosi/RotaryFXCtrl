@@ -8,8 +8,8 @@
 /* server part */
 Ticker timer;
 
-char * ssid = "******";
-char * password = "******";
+char * ssid = "MIT";//"HEXECONTAHEDRON";
+char * password = "";//"salamander";
 
 WebServer Server;
 WebSocketsServer Socket = WebSocketsServer(81);
@@ -33,16 +33,45 @@ void setup() {
   Serial.begin(115200);
   
   /* server part */
-  WiFi.begin(ssid, password);
+//  WiFi.begin(ssid, password);
+//
+//  while (WiFi.status() != WL_CONNECTED) {
+//          Serial.print(".");
+//          delay(500);
+//  }
+//  
+//  Serial.println("");
+//  Serial.println("IP address: ");
+//  Serial.println(WiFi.localIP());
 
-  while (WiFi.status() != WL_CONNECTED) {
-          Serial.print(".");
-          delay(500);
+// connecting to WiFi access point
+//Init WiFi as Station, start SmartConfig
+  WiFi.mode(WIFI_AP_STA);
+  WiFi.beginSmartConfig();
+
+//Wait for SmartConfig packet from mobile
+  Serial.println("Waiting for SmartConfig.");
+  while (!WiFi.smartConfigDone()) {
+    delay(500);
+    Serial.print(".");
   }
-  
+
   Serial.println("");
-  Serial.println("IP address: ");
+  Serial.println("SmartConfig received.");
+
+  //Wait for WiFi to connect to AP
+  Serial.println("Waiting for WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("WiFi Connected.");
+
+  Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  ////////
 
   Server.begin();
   /* serving webpage on client request */
