@@ -8,9 +8,6 @@
 /* server part */
 Ticker timer;
 
-char * ssid = "MIT";//"HEXECONTAHEDRON";
-char * password = "";//"salamander";
-
 WebServer Server;
 WebSocketsServer Socket = WebSocketsServer(81);
 
@@ -33,16 +30,6 @@ void setup() {
   Serial.begin(115200);
   
   /* server part */
-//  WiFi.begin(ssid, password);
-//
-//  while (WiFi.status() != WL_CONNECTED) {
-//          Serial.print(".");
-//          delay(500);
-//  }
-//  
-//  Serial.println("");
-//  Serial.println("IP address: ");
-//  Serial.println(WiFi.localIP());
 
 // connecting to WiFi access point
 //Init WiFi as Station, start SmartConfig
