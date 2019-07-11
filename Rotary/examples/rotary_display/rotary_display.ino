@@ -41,19 +41,31 @@ int buttonState;             // the current reading from the input pin
 int lastButtonState = LOW;   // the previous reading from the input pin
 
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
-unsigned long debounceDelay = 100;    // the debounce time; increase if the output flickers
+unsigned long debounceDelay = 250;    // the debounce time; increase if the output flickers
+unsigned long lastHoldTime = 0;
+unsigned long holdDelay = 3000;
 
 int n = 0; // number of scanned networks
 int scan = 0;
 int print_count = 0;
-volatile int count_changed = 0;
-volatile int curr_ssid = 0;
-boolean SSID_selected = 0; 
+String net = "";
+bool SSID_selected = 0; 
+
+String psswd = String();
+bool PSWD_set = 0;
 
 String id = ""; 
 String oldid = "";
 
-int detents = 60;
+int letter;
+int oldletter;
+
+volatile int state[num] = { HIGH, HIGH };
+volatile int state_short[num] = { HIGH, HIGH };
+volatile int state_long[num] = { HIGH, HIGH };
+
+volatile unsigned long current_high[num];
+volatile unsigned long current_low[num];
 
 void setup() 
 { 
@@ -85,7 +97,10 @@ void setup()
   
   attachInterrupt(digitalPinToInterrupt(CLK[0]), rotate0, CHANGE);
   attachInterrupt(digitalPinToInterrupt(DT[0]), rotate0, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(BTTN[0]), press0, RISING);
+//  attachInterrupt(digitalPinToInterrupt(BTTN[0]), press0, FALLING);
+//  attachInterrupt(digitalPinToInterrupt(BTTN[0]), hold0, RISING);
+
+  attachInterrupt(digitalPinToInterrupt(BTTN[0]), read_button, CHANGE);
 
   attachInterrupt(digitalPinToInterrupt(CLK[1]), rotate1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(DT[1]), rotate1, CHANGE);  
@@ -139,33 +154,86 @@ void loop()
       
       print_count = 1;  
     }
-    
-    id = WiFi.SSID(ro[0].getCounter() % n);  
-    // Serial.println("select network " + String(ro[0].getCounter() % n) + " : " + id);
-    
-    if (oldid != id)
-    {
-      display.clearDisplay();    
-      display.display();
-      display.setCursor(0,0);
-      display.println(String(id));
-      display.display();
-    }
-    
-    oldid = id;      
-    delay(100);
-  }
-  
-  //button logic 
-  String net = "";
-  if (check0())
-  {
-    net = id;
-        
-    Serial.println("button 0 pressed");
-    Serial.println("selected network: " + net);
-  }  
 
+    if (!SSID_selected)
+    {
+      id = WiFi.SSID(ro[0].getCounter() % n);  
+      // Serial.println("select network " + String(ro[0].getCounter() % n) + " : " + id);
+      
+      if (oldid != id)
+      {
+        display.clearDisplay();    
+        display.display();
+        display.setCursor(0,0);
+        display.println(String(id));
+        display.display();
+  
+        oldid = id;
+      }
+
+      //button logic  
+      if (check0())
+      {
+        net = id;
+        SSID_selected = 1;
+        Serial.println("button 0 pressed");
+        Serial.println("selected network: " + net);
+      }
+      
+      //delay(10);
+    }
+    else
+    {      
+      // Serial.println("button state " + String(digitalRead(BTTN[0])));
+      letter = ro[0].getCounter() % 97 + 33;
+
+      if (oldletter != letter)
+      {
+        display.fillRect(0,8,5,8,BLACK);
+        display.display();
+        display.setCursor(0,8);
+        display.print(char(letter));
+        display.display();
+
+        Serial.println(char(letter));
+        oldletter=letter;
+      }
+      
+//      if(check0() && !PSWD_set)
+      if (state[0] == LOW && !PSWD_set)
+      {        
+        psswd = psswd + char(letter);   
+        
+        lastHoldTime = 0;     
+        state[0] = HIGH;
+        Serial.println(psswd);
+      }
+
+//      if(hold0())
+      if (state_long[0] == LOW)
+      {
+        Serial.println("password set: " + psswd);
+        PSWD_set = 1;
+        
+      }
+      // Serial.println("");
+    }    
+
+    if(PSWD_set)
+    {
+      // login
+      WiFi.begin(net.c_str(), psswd.c_str());
+      display.setCursor(0,16);
+      while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        
+        display.print(".");   
+        display.display();           
+      }
+    } 
+    delay(10);
+  }  
+  
   Server.handleClient();
   Socket.loop();
 }
@@ -194,13 +262,59 @@ bool check0()
 {
   if (lastDebounceTime!=0) 
   {
-    if (millis()-lastDebounceTime > debounceDelay)
+    if (millis()-lastDebounceTime > debounceDelay && millis()-lastDebounceTime < holdDelay)
     {
       lastDebounceTime = 0;
       return true;
     }
+  } 
+  
+  lastHoldTime = lastDebounceTime;
+  return false;
+}
+
+bool hold0()
+{
+  if (lastHoldTime!=0)
+  {
+    if (millis() - lastHoldTime > holdDelay && digitalRead(BTTN[0]) == LOW)
+    {
+      Serial.println("holdtime " + String(millis() - lastHoldTime));
+      lastHoldTime = 0;
+      return true;
+    }
   }
   return false;
+}
+
+void read_button()
+{
+  //cycles through the buttons to find out which one was pressed or released
+  for(int i=0; i<num; i++)
+  {
+    //if this is true the button was just pressed down
+    if(digitalRead(BTTN[i]) == LOW)
+    {
+      //note the time the button was pressed
+      current_high[i] = millis();
+      state[i] = LOW;
+    }
+    //if no button is high one had to be released. The millis function will increase while a button is hold down the loop function will be cycled (no change, so no interrupt is active) 
+     if(digitalRead(BTTN[i] == HIGH) && state[i] == LOW)
+    {
+      current_low[i] = millis();
+      if((current_low[i] - current_high[i]) > 50 && (current_low[i] - current_high[i]) < 800)
+      {
+        state_short[i] = !state_short[i];
+        state[i] = HIGH;
+      }
+      else if((current_low[i] - current_high[i]) >= 800 && (current_low[i] - current_high[i]) < 4000)
+      {
+        state_long[i] = !state_long[i];
+        state[i] = HIGH;
+      }
+    }
+  }
 }
 
 // serve encoder data in json format 
