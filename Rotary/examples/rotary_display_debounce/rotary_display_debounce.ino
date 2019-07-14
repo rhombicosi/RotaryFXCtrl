@@ -50,26 +50,30 @@ String oldid = "";
 int letter;
 int oldletter;
 
+unsigned long timeout = 0;
+int readeep = 0; // EEPROM read?
+int start = 0; // server started?
+
 void setup() 
 { 
   Serial.begin(115200);
   EEPROM.begin(512);
-
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
   
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
+  display.clearDisplay();
+  display.display();
+  
+  // text display 
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setCursor(0,0);
+  display.println("rotary encoders V1.0.0.0");
+  display.display();
+
   // wifi part   
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();  
+  WiFi.disconnect();
 
-  // server part
-  Server.begin();  
-  Server.on("/",[](){
-    Server.send_P(200, "text/html", webpage);
-  }); 
-
-  // open socket to transfer data
-  Socket.begin();
-  Socket.onEvent(webSocketEvent);
   timer.attach(0.01, getEncoderData);
 
   // setup software pullups for encoders
@@ -84,149 +88,178 @@ void setup()
 
   attachInterrupt(digitalPinToInterrupt(CLK[1]), rotate1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(DT[1]), rotate1, CHANGE);  
-  // attachInterrupt(digitalPinToInterrupt(BTTN[1]), press1, FALLING); 
-
-  // Clear the buffer.
-  display.clearDisplay();
-  display.display();
-  
-  // text display tests
-  display.setTextSize(1);
-  display.setTextColor(WHITE);
-  display.setCursor(0,0);
-  display.println("rotary encoders");
-  display.display();
 }
 
 void loop() 
-{  
-  b = checkButton();
-//  loadCredentials();
-  
-  unsigned long t0 = millis();
-  unsigned long dif = millis() - t0;
-
-  if (!scan)
+{ 
+  if (!readeep)
   {
+    read_eep();
+    readeep = 1;
+  }  
+  
+  if (!start && readeep && ssid.length() > 1) 
+  {    
+    WiFi.begin(ssid.c_str(), password.c_str());      
+    display.clearDisplay();
+    display.setCursor(0,0);
+    timeout = millis();
+    while (WiFi.status()!= WL_CONNECTED && millis() - timeout < 30000 && !scan ) 
+    { 
+      display.print(">");   
+      display.display();    
+      delay(10);             
+    }
+    if (WiFi.status() == WL_CONNECTED) 
+    {
+      if (print_count == 0)
+      {
+        display.println(char(1));
+        display.println(WiFi.localIP());
+        display.display();
+        print_count++;
+      }
+      scan = 1;      
+    }
+  }
+  
+  if (!scan) 
+  {
+    b = checkButton();
+    
     Serial.println("scan start");
+    unsigned long t0 = millis();
+    unsigned long dif = millis() - t0;
     n = WiFi.scanNetworks(); 
     scan = 1;
     dif = millis() - t0;
     Serial.println("scan time: " +  String(dif));
-  }
   
-  if (n == 0) 
-  {
-    Serial.println("no networks found");
-    scan = 0;
-  }
-  else 
-  { 
-    if (print_count == 0) 
-    {      
-      Serial.println(String(n) + " networks found");
-      
-      for (int i = 0; i < n; ++i) 
-      {         
-        Serial.print(i + 1);
-        Serial.print(": "); 
-        Serial.println( WiFi.SSID(i));
-      }
-
-      Serial.println("select SSID: ");       
-      Serial.println(" "); 
-      
-      print_count++;  
-    }
-
-    if (!ssid_selected)
+    if (n == 0) 
     {
-      id = WiFi.SSID(ro[0].getCounter() % n);
-      
-      if (oldid != id)
-      {
-        display.clearDisplay();    
-        display.display();
-        display.setCursor(0,0);
-        display.println(String(id));
-        display.display();  
-        oldid = id;
-      }
-
-      // button logic  
-      if (b == 1)
-      {
-        ssid = id;
-        ssid_selected = 1;
-        Serial.println("button 0 pressed");
-        Serial.println("selected network: " + ssid);
-      }
+      Serial.println("no networks found");
+      scan = 0;
     }
-    else
-    {      
-      // Serial.println("button state " + String(digitalRead(BTTN[0])));
-      letter = ro[0].getCounter() % 97 + 32;
-
-      if (oldletter != letter && !password_set)
-      {
-        display.fillRect(0,8,128,8,BLACK);
-        display.display();
-        display.setCursor(0,8);
-        display.print(password);
-        display.print(char(letter));
-        display.display();
-
-        Serial.println(char(letter));
-        oldletter=letter;
-      }
-      
-      if (b == 1 && !password_set)
-      {        
-        password = password + char(letter);  
-        Serial.println(password);
-      }
-
-      if (b == 3)
-      {
-        Serial.println("password set: " + password);
-        password_set = 1;        
-      }
-      // Serial.println("");
-    }    
-
-    if(password_set)
-    {
-      // login
-      WiFi.begin(ssid.c_str(), password.c_str());
-      display.setCursor(0,16);
-      while (WiFi.status() != WL_CONNECTED) 
-      {
-        delay(500);
+    else 
+    { 
+      if (print_count == 0) 
+      {      
+        Serial.println(String(n) + " networks found");
         
-        display.print(">");   
-        display.display();                 
+        for (int i = 0; i < n; ++i) 
+        {         
+          Serial.print(i + 1);
+          Serial.print(": "); 
+          Serial.println( WiFi.SSID(i));
+        }
+  
+        Serial.println("select SSID: ");       
+        Serial.println(" "); 
+        
+        print_count++;  
       }
-
-      if (print_count == 1)
+  
+      if (!ssid_selected)
       {
-        Serial.println("WiFi Connected.");
-        display.println(char(1));
-        display.display();
-        Serial.print("IP Address: ");
-        Serial.println(WiFi.localIP());
-        display.println(WiFi.localIP());
-        display.display();
-
-        print_count++;
+        id = WiFi.SSID(ro[0].getCounter() % n);
+        
+        if (oldid != id)
+        {
+          display.clearDisplay();    
+          display.display();
+          display.setCursor(0,0);
+          display.println(String(id));
+          display.display();  
+          oldid = id;
+        }
+  
+        // button logic  
+        if (b == 1)
+        {
+          ssid = id;
+          ssid_selected = 1;
+          Serial.println("button 0 pressed");
+          Serial.println("selected network: " + ssid);
+        }
       }
-
-      if (WiFi.status() == WL_CONNECTED)
+      else
+      { 
+        letter = ro[0].getCounter() % 97 + 32;
+  
+        if (oldletter != letter && !password_set)
+        {
+          display.fillRect(0,8,128,8,BLACK);
+          display.display();
+          display.setCursor(0,8);
+          display.print(password);
+          display.print(char(letter));
+          display.display();
+  
+          Serial.println(char(letter));
+          oldletter=letter;
+        }
+        
+        if (b == 1 && !password_set)
+        {        
+          password = password + char(letter);  
+          Serial.println(password);
+        }
+  
+        if (b == 3)
+        {
+          Serial.println("password set: " + password);
+          password_set = 1;        
+        }
+      }    
+  
+      if(password_set)
       {
-        update_eep();
-      }
-     } 
-     delay(10);
-  }  
+        // login
+        WiFi.begin(ssid.c_str(), password.c_str());
+        display.setCursor(0,16);
+        while (WiFi.status() != WL_CONNECTED) 
+        {
+          delay(500);          
+          display.print(">");   
+          display.display();                 
+        }
+  
+        if (print_count == 1)
+        {
+          Serial.println("WiFi Connected.");
+          display.println(char(1));
+          display.display();
+          Serial.print("IP Address: ");
+          Serial.println(WiFi.localIP());
+          display.println(WiFi.localIP());
+          display.display();
+  
+          print_count++;
+        }
+  
+        if (WiFi.status() == WL_CONNECTED)
+        {
+          update_eep();
+        }
+       } 
+       delay(10);
+    }  
+  }
+
+   
+  if (WiFi.status() == WL_CONNECTED && !start) 
+  {
+    // server part
+    Server.begin();  
+    Server.on("/",[](){
+      Server.send_P(200, "text/html", webpage);
+    }); 
+  
+    // open socket to transfer data
+    Socket.begin();
+    Socket.onEvent(webSocketEvent);
+    start = 1;
+  }
   
   Server.handleClient();
   Socket.loop();
@@ -244,7 +277,7 @@ void rotate1()
   ro[1].rotate();  
 }
 
-// serve encoder data in json format 
+// send encoder data in json format 
 void getEncoderData(){
   String json = "{\"encoders\": [";  
   for (int i = 0; i < num; i++){
@@ -272,6 +305,30 @@ void getEncoderData(){
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){}
+
+void read_eep()
+{
+  // read eeprom for ssid and pass
+  Serial.println("Reading EEPROM ssid");
+  String esid;
+  for (int i = 0; i < 32; ++i)
+    {
+      esid += char(EEPROM.read(i));
+    }
+  Serial.print("SSID: ");
+  Serial.println(esid);
+  Serial.println("Reading EEPROM pass");
+  String epass = "";
+  for (int i = 32; i < 96; ++i)
+    {
+      epass += char(EEPROM.read(i));
+    }
+  Serial.print("PASS: ");
+  Serial.println(epass); 
+
+  ssid = esid;
+  password = epass;
+}
 
 void update_eep()
 {
