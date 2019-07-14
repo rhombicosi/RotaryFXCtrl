@@ -1,6 +1,9 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
+
+#include <EEPROM.h>
+
 #include <Ticker.h>
 #include <Rotary.h>
 #include <SPI.h>
@@ -35,11 +38,11 @@ int b;
 int scan = 0; // number of scans performed
 int n = 0; // number of scanned networks
 int print_count = 0; // counts how many times some selected info is printed
-String SSID = ""; // SSID
-bool SSID_selected = 0; 
+String ssid = ""; // ssid
+bool ssid_selected = 0; 
 
-String psswd = String();
-bool PSWD_set = 0;
+String password = String();
+bool password_set = 0;
 
 String id = ""; 
 String oldid = "";
@@ -50,6 +53,7 @@ int oldletter;
 void setup() 
 { 
   Serial.begin(115200);
+  EEPROM.begin(512);
 
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
   
@@ -97,6 +101,7 @@ void setup()
 void loop() 
 {  
   b = checkButton();
+//  loadCredentials();
   
   unsigned long t0 = millis();
   unsigned long dif = millis() - t0;
@@ -134,10 +139,9 @@ void loop()
       print_count++;  
     }
 
-    if (!SSID_selected)
+    if (!ssid_selected)
     {
-      id = WiFi.SSID(ro[0].getCounter() % n);  
-      // Serial.println("select network " + String(ro[0].getCounter() % n) + " : " + id);
+      id = WiFi.SSID(ro[0].getCounter() % n);
       
       if (oldid != id)
       {
@@ -145,33 +149,30 @@ void loop()
         display.display();
         display.setCursor(0,0);
         display.println(String(id));
-        display.display();
-  
+        display.display();  
         oldid = id;
       }
 
-      //button logic  
+      // button logic  
       if (b == 1)
       {
-        SSID = id;
-        SSID_selected = 1;
+        ssid = id;
+        ssid_selected = 1;
         Serial.println("button 0 pressed");
-        Serial.println("selected network: " + SSID);
+        Serial.println("selected network: " + ssid);
       }
-      
-      //delay(10);
     }
     else
     {      
       // Serial.println("button state " + String(digitalRead(BTTN[0])));
       letter = ro[0].getCounter() % 97 + 32;
 
-      if (oldletter != letter && !PSWD_set)
+      if (oldletter != letter && !password_set)
       {
         display.fillRect(0,8,128,8,BLACK);
         display.display();
         display.setCursor(0,8);
-        display.print(psswd);
+        display.print(password);
         display.print(char(letter));
         display.display();
 
@@ -179,37 +180,37 @@ void loop()
         oldletter=letter;
       }
       
-      if (b == 1 && !PSWD_set)
+      if (b == 1 && !password_set)
       {        
-        psswd = psswd + char(letter);  
-        Serial.println(psswd);
+        password = password + char(letter);  
+        Serial.println(password);
       }
 
       if (b == 3)
       {
-        Serial.println("password set: " + psswd);
-        PSWD_set = 1;        
+        Serial.println("password set: " + password);
+        password_set = 1;        
       }
       // Serial.println("");
     }    
 
-    if(PSWD_set)
+    if(password_set)
     {
       // login
-      WiFi.begin(SSID.c_str(), psswd.c_str());
+      WiFi.begin(ssid.c_str(), password.c_str());
       display.setCursor(0,16);
       while (WiFi.status() != WL_CONNECTED) 
       {
         delay(500);
         
-        display.print(".");   
+        display.print(">");   
         display.display();                 
       }
 
       if (print_count == 1)
       {
         Serial.println("WiFi Connected.");
-        display.println("WiFi Connected.");
+        display.println(char(1));
         display.display();
         Serial.print("IP Address: ");
         Serial.println(WiFi.localIP());
@@ -217,6 +218,11 @@ void loop()
         display.display();
 
         print_count++;
+      }
+
+      if (WiFi.status() == WL_CONNECTED)
+      {
+        update_eep();
       }
      } 
      delay(10);
@@ -265,7 +271,36 @@ void getEncoderData(){
   Socket.broadcastTXT(json.c_str(), json.length());
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){};
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){}
+
+void update_eep()
+{
+  Serial.println("clearing eeprom");
+  for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
+  String qsid; 
+  qsid = ssid;
+  String qpass;
+  qpass = password;
+  Serial.println(qpass);
+  Serial.println("");
+  
+  Serial.println("writing eeprom ssid:");
+  for (int i = 0; i < qsid.length(); ++i)
+    {
+      EEPROM.write(i, qsid[i]);
+      Serial.print("Wrote: ");
+      Serial.println(qsid[i]); 
+    }
+  Serial.println("writing eeprom pass:"); 
+  for (int i = 0; i < qpass.length(); ++i)
+    {
+      EEPROM.write(32+i, qpass[i]);
+      Serial.print("Wrote: ");
+      Serial.println(qpass[i]); 
+    }    
+  EEPROM.commit();
+  Serial.print("saved to eeprom... reset to boot into new wifi");    
+}
 
 /* 4-Way Button:  Click, Double-Click, Press+Hold, and Press+Long-Hold Test Sketch
 
