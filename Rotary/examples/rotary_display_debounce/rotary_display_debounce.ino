@@ -71,7 +71,7 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("rotary encoders V1");
+  display.println("rotary encoders 1V1");
   display.display();
 
   // wifi part   
