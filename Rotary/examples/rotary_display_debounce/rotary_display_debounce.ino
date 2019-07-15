@@ -51,14 +51,14 @@ unsigned long timeout = 0;
 int readeep = 0; // EEPROM read?
 int start = 0; // server started?
 
-bool eep = false;
+bool eep = false; // true if creds obtained from EEPROM
 
 void setup() 
 { 
   Serial.begin(115200);
   EEPROM.begin(512);
 
-//  for test
+//  for creds saving test
 //  Serial.println("clearing eeprom");
 //  for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
 //  EEPROM.commit();
@@ -105,12 +105,9 @@ void loop()
     read_eep();
     readeep = 1;
 
-    //if (ssid != "")
     if (ssid.length() > 1)
     {
       scan = 1;
-      Serial.println("SSID repeat " + ssid);
-      Serial.println("SSID length " + String(ssid.length()));
       if (password.length() > 1)
       {
         creds_received = 1;
@@ -184,37 +181,27 @@ void loop()
       else
       { 
         letter = ro[0].getCounter() % 97 + 32;
-  
-        if (oldletter != letter && !password_set)
+        
+        if (!password_set && oldpswd != password)
         {
           display.fillRect(0,8,128,8,BLACK);
           display.display();
           display.setCursor(0,8);
           display.print(password);
+          oldpswd = password;
+          display.display();
+        }  
+        if (!password_set && oldletter != letter)
+        { 
+          display.fillRect(password.length()*6,8,6,8,BLACK); 
+          display.display();
+          display.setCursor(password.length()*6,8);        
           display.print(char(letter));
           display.display();
-         
+  
           Serial.println(char(letter));
           oldletter=letter;
         }
-        
-  //      if (!password_set && oldpswd != password)
-  //      {
-  //        display.fillRect(0,8,128,8,BLACK);
-  //        display.display();
-  //        display.setCursor(0,8);
-  //        display.print(password);
-  //        oldpswd = password;
-  //      }
-  //
-  //      if (!password_set && oldletter != letter)
-  //      {          
-  //        display.print(char(letter));
-  //        display.display();
-  //
-  //        Serial.println(char(letter));
-  //        oldletter=letter;
-  //      }
         
         if (b == 1 && !password_set)
         { 
@@ -235,8 +222,6 @@ void loop()
   if (!start && creds_received)
   {
     // login
-    Serial.println(" creds " + String(creds_received));
-    
     WiFi.begin(ssid.c_str(), password.c_str());
     display.setCursor(0,16);
     while (WiFi.status() != WL_CONNECTED) 
@@ -245,8 +230,6 @@ void loop()
       display.print(">");   
       display.display();                 
     }
-
-    Serial.println(" print_count " + String(print_count));
     
     if ((eep && !print_count) || (!eep && print_count))
     {
@@ -261,7 +244,7 @@ void loop()
       print_count++;
     } 
 
-    if (WiFi.status() == WL_CONNECTED && eep == false) {update_eep();}
+    if (WiFi.status() == WL_CONNECTED && !eep) {update_eep();}
   } 
    
   if (WiFi.status() == WL_CONNECTED && !start) 
@@ -335,7 +318,6 @@ void read_eep()
       if (lttr != "") 
       {
         esid += char(EEPROM.read(i));
-        Serial.println("EEPROM SHIT " + String(char(EEPROM.read(i))));
       }
     }
   Serial.print("SSID: ");
