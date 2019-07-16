@@ -116,7 +116,7 @@ void loop()
     }
     else
     {
-      Serial.print("ssid is empty");
+      Serial.println("ssid is empty");
     }
   } 
   if (!scan) 
