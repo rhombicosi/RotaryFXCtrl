@@ -209,7 +209,7 @@ void loop()
           Serial.println(password);
         }
 
-        // TODO if (b == 2) delete previous letter 
+        // TODO if (b == 2) delete previous letter / backspace ascii
   
         if (b == 4)
         {
