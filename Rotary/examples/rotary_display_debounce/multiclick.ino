@@ -1,4 +1,3 @@
-
 /* 4-Way Button:  Click, Double-Click, Press+Hold, and Press+Long-Hold Test Sketch
 
 By Jeff Saltzman
