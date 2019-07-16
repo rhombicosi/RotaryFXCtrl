@@ -46,6 +46,7 @@ int letter;
 int oldletter;
 String pswd = "";
 String oldpswd = "";
+int creds_received = 0;
 
 unsigned long timeout = 0;
 int readeep = 0; // EEPROM read?
@@ -93,8 +94,6 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(CLK[1]), rotate1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(DT[1]), rotate1, CHANGE);  
 }
-
-int creds_received = 0;
 
 void loop() 
 { 
@@ -185,7 +184,6 @@ void loop()
         if (oldpswd != password)
         {
           display.fillRect(0,8,128,8,BLACK);
-          display.display();
           display.setCursor(0,8);
           display.print(password);
           oldpswd = password;
@@ -194,7 +192,6 @@ void loop()
         if (oldletter != letter)
         { 
           display.fillRect(password.length()*6,8,6,8,BLACK); 
-          display.display();
           display.setCursor(password.length()*6,8);        
           display.print(char(letter));
           display.display();

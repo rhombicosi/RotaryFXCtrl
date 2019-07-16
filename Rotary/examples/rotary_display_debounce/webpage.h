@@ -19,8 +19,7 @@ R"=====(
         font-size: 1em;
         font-family: sans-serif;
         color: gray;
-    }
-    
+    }    
     .rTable { 
       display: table;
       width: 100%;
@@ -45,21 +44,6 @@ R"=====(
       display: table-cell;
       padding: 3px 10px;
       border: 1px solid #999999; 
-    }
-    #geometry {
-      width:  80%;
-      height: 75%;
-    } 
-//    #3d {
-//      display: block;      
-//    }
-    #3d {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
     }
   </style> 
 </head>
@@ -117,7 +101,6 @@ R"=====(
     }    
 
     function setup(){
-//      let cnv = createCanvas(windowWidth * 0.95, windowHeight * 0.85, WEBGL);
       let cnv = createCanvas(windowWidth, windowHeight, WEBGL);
       cnv.style('position', 'absolute');
       cnv.style('top', '0');
@@ -125,7 +108,6 @@ R"=====(
       cnv.style('width', '100%');
       cnv.style('height', '100%');
       cnv.style('z-index', '-1');
-//      cnv.class('geometry');
       cnv.parent('3d'); 
 
       for (let i = 0; i < width; i++) {
