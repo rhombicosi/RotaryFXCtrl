@@ -58,7 +58,7 @@ void setup()
   Serial.begin(115200);
   EEPROM.begin(512);
 
-//  for creds saving test
+//  for creds updating test
 //  Serial.println("clearing eeprom");
 //  for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
 //  EEPROM.commit();
@@ -71,7 +71,7 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0,0);
-  display.println("rotary encoders 1V1");
+  display.println("rotary encoders 1V0");
   display.display();
 
   // wifi part   
@@ -178,11 +178,11 @@ void loop()
           Serial.println("selected network: " + ssid);
         }
       }
-      else
+      else if (!password_set)
       { 
         letter = ro[0].getCounter() % 97 + 32;
         
-        if (!password_set && oldpswd != password)
+        if (oldpswd != password)
         {
           display.fillRect(0,8,128,8,BLACK);
           display.display();
@@ -191,7 +191,7 @@ void loop()
           oldpswd = password;
           display.display();
         }  
-        if (!password_set && oldletter != letter)
+        if (oldletter != letter)
         { 
           display.fillRect(password.length()*6,8,6,8,BLACK); 
           display.display();
@@ -203,11 +203,13 @@ void loop()
           oldletter=letter;
         }
         
-        if (b == 1 && !password_set)
+        if (b == 1)
         { 
           password = password + char(letter);  
           Serial.println(password);
         }
+
+        // TODO if (b == 2) delete previous letter 
   
         if (b == 4)
         {
