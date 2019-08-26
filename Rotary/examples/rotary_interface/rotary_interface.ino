@@ -1,9 +1,12 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <WebSocketsServer.h>
+
 #include <EEPROM.h>
 #include <Ticker.h>
+
 #include <Rotary.h>
+
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
@@ -39,16 +42,15 @@ int print_count = 0; // counts how many times some selected info is printed
 String ssid = String(); // stores ssid
 bool ssid_selected = 0; // true if ssid is selected
 String password = String(); // stores password
-bool password_set = 0; // true if password set
+bool passwordset = 0; // true if password set
 String id = ""; // ssid displayed
 String oldid = ""; // previos ssid displayed
 int letter;
 int oldletter;
 String pswd = "";
 String oldpswd = "";
-int creds_received = 0;
+int credsreceived = 0;
 
-unsigned long timeout = 0;
 int readeep = 0; // EEPROM read?
 int start = 0; // server started?
 
@@ -60,11 +62,10 @@ void setup()
   EEPROM.begin(512);
 
 //  for creds updating test
-//  Serial.println("clearing eeprom");
-//  for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
-//  EEPROM.commit();
+//  clear_eep();
   
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
+
   display.clearDisplay();
   display.display();
   
@@ -109,7 +110,7 @@ void loop()
       scan = 1;
       if (password.length() > 1)
       {
-        creds_received = 1;
+        credsreceived = 1;
         eep = true;
       }
     }
@@ -120,13 +121,14 @@ void loop()
   } 
   if (!scan) 
   {
-    Serial.println("scan start");
-    n = WiFi.scanNetworks();
-    scan = 1; 
+    WiFi.disconnect();
+    Serial.println("scan start");    
+    n = WiFi.scanNetworks(); 
+    scan = 1;    
   }
-  else if (!creds_received)
+  else if (!credsreceived)
   {
-    if (n == 0) 
+    if (n <= 0) 
     {
       Serial.println("no networks found");
       scan = 0;
@@ -159,7 +161,7 @@ void loop()
         if (oldid != id)
         {
           display.clearDisplay();    
-          display.display();
+          //display.display();
           display.setCursor(0,0);
   
           display.println(String(id));
@@ -177,7 +179,7 @@ void loop()
           Serial.println("selected network: " + ssid);
         }
       }
-      else if (!password_set)
+      else if (!passwordset)
       { 
         letter = ro[0].getCounter() % 97 + 32;
         
@@ -211,23 +213,30 @@ void loop()
         if (b == 4)
         {
           Serial.println("password set: " + password);
-          password_set = 1;  
-          creds_received = 1;      
+          passwordset = 1;  
+          credsreceived = 1;      
         }        
       }
     } 
   }
 
-  if (!start && creds_received)
+  if (!start && credsreceived)
   {
     // login
     WiFi.begin(ssid.c_str(), password.c_str());
     display.setCursor(0,16);
-    while (WiFi.status() != WL_CONNECTED) 
+
+    
+    unsigned long timeout = 0;
+    unsigned long timestart = millis();
+    Serial.println("timestart: " + String(timestart)); 
+    while (WiFi.status() != WL_CONNECTED && timeout < 15000) 
     {
       delay(500);          
       display.print(">");   
-      display.display();                 
+      display.display(); 
+      timeout = millis() - timestart;  
+      Serial.println("timeout: " + String(timeout));            
     }
     
     if ((eep && !print_count) || (!eep && print_count))
@@ -243,7 +252,15 @@ void loop()
       print_count++;
     } 
 
-    if (WiFi.status() == WL_CONNECTED && !eep) {update_eep();}
+    if (WiFi.status() == WL_CONNECTED && !eep) 
+    {
+      update_eep();
+    }    
+    else 
+    {      
+      clear_eep();
+      reset();
+    }
   } 
    
   if (WiFi.status() == WL_CONNECTED && !start) 
@@ -304,66 +321,3 @@ void getEncoderData(){
 }
 
 void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){}
-
-void read_eep()
-{
-  // read eeprom for ssid and pass
-  Serial.println("Reading EEPROM ssid");
-  String esid;
-  String lttr;
-  for (int i = 0; i < 32; ++i)
-    {  
-      lttr = String(char(EEPROM.read(i)));    
-      if (lttr != "") 
-      {
-        esid += char(EEPROM.read(i));
-      }
-    }
-  Serial.print("SSID: ");
-  Serial.println(esid);
-  Serial.println("Reading EEPROM pass");
-  String epass; // "";
-  String pass;
-  for (int i = 32; i < 96; ++i)
-    {
-      pass = String(char(EEPROM.read(i))); 
-      if (pass != "")
-      {
-        epass += char(EEPROM.read(i));
-      }
-    }
-  Serial.print("PASS: ");
-  Serial.println(epass); 
-
-  ssid = esid;
-  password = epass;
-}
-
-void update_eep()
-{
-  Serial.println("clearing eeprom");
-  for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
-  String qsid; 
-  qsid = ssid;
-  String qpass;
-  qpass = password;
-  Serial.println(qpass);
-  Serial.println("");
-  
-  Serial.println("writing eeprom ssid:");
-  for (int i = 0; i < qsid.length(); ++i)
-    {
-      EEPROM.write(i, qsid[i]);
-      Serial.print("Wrote: ");
-      Serial.println(qsid[i]); 
-    }
-  Serial.println("writing eeprom pass:"); 
-  for (int i = 0; i < qpass.length(); ++i)
-    {
-      EEPROM.write(32+i, qpass[i]);
-      Serial.print("Wrote: ");
-      Serial.println(qpass[i]); 
-    }    
-  EEPROM.commit();
-  Serial.print("saved to eeprom...");    
-}
