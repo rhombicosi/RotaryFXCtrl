@@ -65,6 +65,7 @@ void clear_eep()
 {
   Serial.println("clearing eeprom");
   for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
+  EEPROM.commit();
 }
 
 void reset()
@@ -73,7 +74,8 @@ void reset()
   display.setCursor(0,0);
   display.println("rotary encoders 1V0");
   display.display();
-  
+
+  oldid = "";
   readeep = 0;
   scan = 0;
   ssid_selected = 0;

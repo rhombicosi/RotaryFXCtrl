@@ -100,125 +100,133 @@ void loop()
 { 
   b = checkButton();
   
-  if (!readeep)
+  if (!start) 
   {
-    read_eep();
-    readeep = 1;
-
-    if (ssid.length() > 1)
-    {
-      scan = 1;
-      if (password.length() > 1)
+    if (!readeep)
+    {      
+      read_eep();
+      readeep = 1;
+  
+      if (ssid.length() > 1)
       {
-        credsreceived = 1;
-        eep = true;
-      }
-    }
-    else
-    {
-      Serial.println("ssid is empty");
-    }
-  } 
-  if (!scan) 
-  {
-    WiFi.disconnect();
-    Serial.println("scan start");    
-    n = WiFi.scanNetworks(); 
-    scan = 1;    
-  }
-  else if (!credsreceived)
-  {
-    if (n <= 0) 
-    {
-      Serial.println("no networks found");
-      scan = 0;
-    }
-    else 
-    { 
-      if (print_count == 0) 
-      {      
-        Serial.println(String(n) + " networks found");
-        
-        for (int i = 0; i < n; ++i) 
-        {         
-          Serial.print(i + 1);
-          Serial.print(": "); 
-          Serial.println(WiFi.SSID(i));
+        scan = 1;
+        if (password.length() > 1)
+        {
+          credsreceived = 1;
+          eep = true;
         }
-  
-        Serial.println("select SSID: ");       
-        Serial.println(" "); 
-  
-        // TODO show this info on dispay
-        
-        print_count++;  
       }
-  
-      if (!ssid_selected)
+      else
       {
-        id = WiFi.SSID(ro[0].getCounter() % n);
-        
-        if (oldid != id)
-        {
-          display.clearDisplay();    
-          //display.display();
-          display.setCursor(0,0);
-  
-          display.println(String(id));
-          display.display();  
-          oldid = id;
-        }
-  
-        // button logic  
-        if (b == 1)
-        {
-          ssid = id;
-          ssid_selected = 1;
-          password = String();
-          Serial.println("button 0 pressed");
-          Serial.println("selected network: " + ssid);
-        }
+        Serial.println("ssid is empty");
       }
-      else if (!passwordset)
+    }
+  
+    if (!scan) 
+    {
+      Serial.println("start: " + String(start));  
+      
+      WiFi.disconnect();
+      Serial.println("scan start");    
+      n = WiFi.scanNetworks(); 
+      scan = 1;    
+    }
+    else if (!credsreceived)
+    {      
+      if (n <= 0) 
+      {
+        Serial.println("no networks found");
+        scan = 0;
+      }
+      else 
       { 
-        letter = ro[0].getCounter() % 97 + 32;
-        
-        if (oldpswd != password)
-        {
-          display.fillRect(0,8,128,8,BLACK);
-          display.setCursor(0,8);
-          display.print(password);
-          oldpswd = password;
-          display.display();
-        }  
-        if (oldletter != letter)
-        { 
-          display.fillRect(password.length()*6,8,6,8,BLACK); 
-          display.setCursor(password.length()*6,8);        
-          display.print(char(letter));
-          display.display();
-  
-          Serial.println(char(letter));
-          oldletter=letter;
+        if (print_count == 0) 
+        {      
+          Serial.println(String(n) + " networks found");
+          
+          for (int i = 0; i < n; ++i) 
+          {         
+            Serial.print(i + 1);
+            Serial.print(": "); 
+            Serial.println(WiFi.SSID(i));
+          }
+    
+          Serial.println("select SSID: ");       
+          Serial.println(" "); 
+    
+          // TODO show this info on dispay
+          
+          print_count++;  
         }
-        
-        if (b == 1)
-        { 
-          password = password + char(letter);  
-          Serial.println(password);
-        }
-
-        // TODO if (b == 2) delete previous letter / backspace ascii
-  
-        if (b == 4)
+    
+        if (!ssid_selected)
         {
-          Serial.println("password set: " + password);
-          passwordset = 1;  
-          credsreceived = 1;      
-        }        
-      }
-    } 
+          id = WiFi.SSID(ro[0].getCounter() % n);
+          
+          if (oldid != id)
+          {
+            display.clearDisplay();    
+            display.display();
+            display.setCursor(0,0);
+    
+            display.println(String(id));
+            display.display();  
+            oldid = id;
+          }
+    
+          // button logic  
+          if (b == 1)
+          {
+            ssid = id;
+            ssid_selected = 1;
+            password = String();
+            Serial.println("button 0 pressed");
+            Serial.println("selected network: " + ssid);
+          }
+        }
+        else if (!passwordset)
+        { 
+          letter = ro[0].getCounter() % 97 + 32;
+          
+          if (oldpswd != password)
+          {
+            display.fillRect(0,8,128,8,BLACK);
+            display.setCursor(0,8);
+            display.print(password);
+            oldpswd = password;
+            display.display();
+          }  
+          if (oldletter != letter)
+          { 
+            display.fillRect(password.length()*6,8,6,8,BLACK); 
+            display.setCursor(password.length()*6,8);        
+            display.print(char(letter));
+            display.display();
+    
+            Serial.println(char(letter));
+            oldletter=letter;
+          }
+          
+          if (b == 1)
+          { 
+            password = password + char(letter);  
+            Serial.println(password);
+          }
+  
+          // TODO if (b == 2) delete previous letter / backspace ascii
+    
+          if (b == 2)
+          {
+            Serial.println("password set: " + password);
+            passwordset = 1;  
+            credsreceived = 1;
+            Serial.println("start: " + String(start));      
+          }        
+        }
+      } 
+    }
   }
+  
 
   if (!start && credsreceived)
   {
@@ -239,7 +247,7 @@ void loop()
       Serial.println("timeout: " + String(timeout));            
     }
     
-    if ((eep && !print_count) || (!eep && print_count))
+    if (WiFi.status() == WL_CONNECTED && ((eep && !print_count) || (!eep && print_count)))
     {
       Serial.println("WiFi Connected.");
       display.println(char(1));
@@ -256,9 +264,9 @@ void loop()
     {
       update_eep();
     }    
-    else 
-    {      
-      clear_eep();
+    if(WiFi.status() != WL_CONNECTED)
+    {    
+      if (eep) clear_eep();
       reset();
     }
   } 
