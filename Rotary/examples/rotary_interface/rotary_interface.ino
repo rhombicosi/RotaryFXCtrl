@@ -203,7 +203,7 @@ void loop()
             display.display();
     
             Serial.println(char(letter));
-            oldletter=letter;
+            oldletter = letter;
           }
           
           if (b == 1)
