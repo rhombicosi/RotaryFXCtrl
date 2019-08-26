@@ -42,16 +42,16 @@ int print_count = 0; // counts how many times some selected info is printed
 String ssid = String(); // stores ssid
 bool ssid_selected = 0; // true if ssid is selected
 String password = String(); // stores password
-bool passwordset = 0; // true if password set
+bool password_set = 0; // true if password set
 String id = ""; // ssid displayed
 String oldid = ""; // previos ssid displayed
 int letter;
 int oldletter;
 String pswd = "";
 String oldpswd = "";
-int credsreceived = 0;
+int creds_received = 0;
 
-int readeep = 0; // EEPROM read?
+int eep_read = 0; // EEPROM read?
 int start = 0; // server started?
 
 bool eep = false; // true if creds obtained from EEPROM
@@ -63,6 +63,7 @@ void setup()
 
 //  for creds updating test
 //  clear_eep();
+//  update_eep(ssid, password);
   
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // Address 0x3C for 128x32
 
@@ -102,17 +103,17 @@ void loop()
   
   if (!start) 
   {
-    if (!readeep)
+    if (!eep_read)
     {      
       read_eep();
-      readeep = 1;
+      eep_read = 1;
   
       if (ssid.length() > 1)
       {
         scan = 1;
         if (password.length() > 1)
         {
-          credsreceived = 1;
+          creds_received = 1;
           eep = true;
         }
       }
@@ -123,15 +124,13 @@ void loop()
     }
   
     if (!scan) 
-    {
-      Serial.println("start: " + String(start));  
-      
+    {      
       WiFi.disconnect();
       Serial.println("scan start");    
       n = WiFi.scanNetworks(); 
       scan = 1;    
     }
-    else if (!credsreceived)
+    else if (!creds_received)
     {      
       if (n <= 0) 
       {
@@ -184,7 +183,7 @@ void loop()
             Serial.println("selected network: " + ssid);
           }
         }
-        else if (!passwordset)
+        else if (!password_set)
         { 
           letter = ro[0].getCounter() % 97 + 32;
           
@@ -218,22 +217,20 @@ void loop()
           if (b == 2)
           {
             Serial.println("password set: " + password);
-            passwordset = 1;  
-            credsreceived = 1;
+            password_set = 1;  
+            creds_received = 1;
             Serial.println("start: " + String(start));      
           }        
         }
       } 
     }
-  }
-  
+  }  
 
-  if (!start && credsreceived)
+  if (!start && creds_received)
   {
     // login
     WiFi.begin(ssid.c_str(), password.c_str());
     display.setCursor(0,16);
-
     
     unsigned long timeout = 0;
     unsigned long timestart = millis();
@@ -262,7 +259,7 @@ void loop()
 
     if (WiFi.status() == WL_CONNECTED && !eep) 
     {
-      update_eep();
+      update_eep(ssid, password);
     }    
     if(WiFi.status() != WL_CONNECTED)
     {    

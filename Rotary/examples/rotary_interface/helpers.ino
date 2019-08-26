@@ -32,7 +32,7 @@ void read_eep()
   password = epass;
 }
 
-void update_eep()
+void update_eep( String ssid, String password)
 {
   Serial.println("clearing eeprom");
   for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
@@ -76,11 +76,11 @@ void reset()
   display.display();
 
   oldid = "";
-  readeep = 0;
+  eep_read = 0;
   scan = 0;
   ssid_selected = 0;
-  credsreceived = 0;
-  passwordset = 0;
+  creds_received = 0;
+  password_set = 0;
 
   print_count = 0;
  
