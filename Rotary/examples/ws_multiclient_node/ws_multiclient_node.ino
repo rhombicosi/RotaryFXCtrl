@@ -5,8 +5,8 @@
 
 #include <Rotary.h>
 
-const char* ssid = "HEXECONTAHEDRON";
-const char* password = "salamander";
+const char* ssid = "SSID";
+const char* password = "PSSWRD";
 
 char path[] = "/";   //identifier of this device
 char host[] = "10.0.0.4";  //replace this ip address with the ip address of your Node.Js server
