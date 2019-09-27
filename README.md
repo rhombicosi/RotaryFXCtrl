@@ -1,3 +1,3 @@
 RotaryFXCtrl
 
-Firmware for media controller with multiple encoders connected to internet
+Firmware for media controllers with multiple encoders connected to internet and each other
