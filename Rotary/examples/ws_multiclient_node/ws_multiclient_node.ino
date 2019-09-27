@@ -1,4 +1,3 @@
-/*******************Esp8266_Websocket.ino****************************************/
 #include <WiFi.h>
 #include <WebSocketClient.h>
 #include <Ticker.h>
