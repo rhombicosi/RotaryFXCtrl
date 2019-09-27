@@ -28,12 +28,20 @@ char webpage[] PROGMEM =
 ;
 
 /* initialise encoders */
-const int num = 2; // number of encoders
-const int CLK[num] = {14, 15};
-const int DT[num] = {32, 33};
-const int BTTN[num] = {25, 21};
-Rotary ro[num] = { Rotary(CLK[0], DT[0], BTTN[0]), Rotary(CLK[1], DT[1], BTTN[1])};
-int b;
+const int num = 4; // number of encoders
+const int CLK[num] = {12, 25, 15, 14};
+const int DT[num] = {13, 26, 33, 32};
+const int BTTN[num] = {36, 27, 4, 21};
+
+/* 
+ * Initialize an array of Rotary class objects: rotary encoders   
+ */
+Rotary ro[num] = { Rotary(CLK[0], DT[0], BTTN[0]), 
+                   Rotary(CLK[1], DT[1], BTTN[1]),
+                   Rotary(CLK[2], DT[2], BTTN[2]),
+                   Rotary(CLK[3], DT[3], BTTN[3])};
+
+int b; // button state
 
 /* wifi */
 int scan = 0; // number of scans performed
@@ -95,6 +103,12 @@ void setup()
 
   attachInterrupt(digitalPinToInterrupt(CLK[1]), rotate1, CHANGE);
   attachInterrupt(digitalPinToInterrupt(DT[1]), rotate1, CHANGE);  
+
+  attachInterrupt(digitalPinToInterrupt(CLK[2]), rotate2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DT[2]), rotate2, CHANGE);  
+
+  attachInterrupt(digitalPinToInterrupt(CLK[3]), rotate3, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(DT[3]), rotate3, CHANGE);  
 }
 
 void loop() 
@@ -298,6 +312,18 @@ void rotate1()
   ro[1].rotate();  
 }
 
+void rotate2() 
+{
+  ro[2].process();
+  ro[2].rotate();
+}
+
+void rotate3()
+{
+  ro[3].process();
+  ro[3].rotate();  
+}
+
 // send encoder data in json format 
 void getEncoderData(){
   String json = "{\"encoders\": [";  
@@ -316,7 +342,7 @@ void getEncoderData(){
     json += "\"period\": ";
     json += ro[i].getPeriod();
     json += "}";
-    if(i != 1) {
+    if(i != num - 1) {
       json += ",";  
     }
   }  
@@ -325,4 +351,4 @@ void getEncoderData(){
   Socket.broadcastTXT(json.c_str(), json.length());
 }
 
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length){}
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length){}

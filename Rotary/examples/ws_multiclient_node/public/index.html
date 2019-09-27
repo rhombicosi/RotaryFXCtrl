@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8"/>
+    <title>ESP32 Websocket</title> 
+    
+    <style type="text/css">
+        body {
+          margin: 0;
+          padding: 0;
+          background: black;
+          color: white;
+          line-height: 100%;
+          font-size: 1rem;
+        }    
+        h1 {
+            font-size: 1em;
+            font-family: sans-serif;
+            color: gray;
+        }    
+        .rTable { 
+          display: table;
+          width: 100%;
+        }
+        .rTableRow { 
+          display: table-row; 
+        }
+        .rTableHeading { 
+          display: table-header-group; 
+          background-color: #ddd;
+          font-weight: bold;
+        }
+        .rTableBody { 
+          display: table-row-group; 
+        }
+        .rTableFoot { 
+          display: table-footer-group; 
+          background-color: #ddd;
+          font-weight: bold;
+        }
+        .rTableCell, .rTableHead { 
+          display: table-cell;
+          padding: 3px 10px;
+          border: 1px solid #999999; 
+        }
+      </style> 
+</head>
+
+<body>    
+    <div class="rTable">
+        <div class="rTableRow">
+            <div class="rTableHead"><strong>Encoder</strong></div>
+            <div class="rTableHead"><strong>Counter</strong></div>
+            <div class="rTableHead"><strong>Angle</strong></div>
+            <div class="rTableHead"><strong>Period</strong></div>
+        </div>
+        <div class="rTableRow">
+            <div class="rTableCell">1</div>
+            <div class="rTableCell"><a id="counter1"></a></div>
+            <div class="rTableCell"><a id="angle1"></a></div>
+            <div class="rTableCell"><a id="period1"></a></div>
+        </div>
+        <div class="rTableRow">
+            <div class="rTableCell">2</div>
+            <div class="rTableCell"><a id="counter2"></a></div>
+            <div class="rTableCell"><a id="angle2"></a></div>
+            <div class="rTableCell"><a id="period2"></a></div>
+        </div>
+        <div class="rTableRow">
+            <div class="rTableCell">3</div>
+            <div class="rTableCell"><a id="counter3"></a></div>
+            <div class="rTableCell"><a id="angle3"></a></div>
+            <div class="rTableCell"><a id="period3"></a></div>
+        </div>
+        <div class="rTableRow">
+            <div class="rTableCell">4</div>
+            <div class="rTableCell"><a id="counter4"></a></div>
+            <div class="rTableCell"><a id="angle4"></a></div>
+            <div class="rTableCell"><a id="period4"></a></div>
+        </div>
+    </div>
+    <script type="text/javascript" src="sketch.js"></script>   
+</body>
+
+</html>

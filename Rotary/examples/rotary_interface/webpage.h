@@ -4,8 +4,7 @@ R"=====(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RotaryFXCtrl</title>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js'></script> 
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/smoothie/1.32.0/smoothie.min.js'></script> 
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js'></script>
   <style type="text/css">
     body {
       margin: 0;
@@ -68,15 +67,28 @@ R"=====(
       <div class="rTableCell"><a id="angle2"></a></div>
       <div class="rTableCell"><a id="period2"></a></div>
     </div>
+    <div class="rTableRow">
+      <div class="rTableCell">3</div>
+      <div class="rTableCell"><a id="counter3"></a></div>
+      <div class="rTableCell"><a id="angle3"></a></div>
+      <div class="rTableCell"><a id="period3"></a></div>
+    </div>
+    <div class="rTableRow">
+      <div class="rTableCell">4</div>
+      <div class="rTableCell"><a id="counter4"></a></div>
+      <div class="rTableCell"><a id="angle4"></a></div>
+      <div class="rTableCell"><a id="period4"></a></div>
+    </div>
   </div>
   
   <div id="3d"></div>
   <script>
-    let webSocket = new WebSocket('ws://' + window.location.hostname + ':81/');
+    const webSocket = new WebSocket('ws://' + window.location.hostname + ':81/');
 
     /*
      * arrays for storing encoders
     */
+    const num = 4;
     let counters = [];
     let angles = [];
     let periods = [];
@@ -85,12 +97,12 @@ R"=====(
     * encoder web interface
     */
     let coswave = [];
-    let outsideRadius = 150;
-    let insideRadius = 100;
+    const outsideRadius = 150;
+    const insideRadius = 100;
 
     webSocket.onmessage = function(event) {
       let data = JSON.parse(event.data);
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < num; i++) {
         counters[i] = data.encoders[i].counter;
         angles[i] = data.encoders[i].angle;
         periods[i] = data.encoders[i].period;
